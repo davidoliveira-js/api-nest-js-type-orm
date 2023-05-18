@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const acquisition_service_1 = require("./acquisition.service");
 const nest_response_builder_1 = require("../core/http/nest-response-builder");
 const CreateAcquisition_dto_1 = require("./dto/CreateAcquisition.dto");
+const nest_access_control_1 = require("nest-access-control");
+const app_roles_1 = require("../access-control/app.roles");
 let AcquisitionController = class AcquisitionController {
     constructor(acquisitionService) {
         this.acquisitionService = acquisitionService;
@@ -25,17 +27,14 @@ let AcquisitionController = class AcquisitionController {
         const acquisitions = await this.acquisitionService.findAllAcquisitions();
         return acquisitions;
     }
-    async getOneById(id) {
-        const acquisition = await this.acquisitionService.findOneAcquisitionById(id);
-        if (!acquisition) {
-            throw new common_1.NotFoundException({
-                statusCode: common_1.HttpStatus.NOT_FOUND,
-                message: 'Pagamento não encontrado.',
-            });
-        }
+    async getOneById(id, userRoles, req) {
+        const acquisition = await this.acquisitionService.findOneAcquisitionById(id, userRoles, req.user.id);
         return acquisition;
     }
-    async create(data) {
+    async create(data, req, userRoles) {
+        if (userRoles !== app_roles_1.Roles.ADMIN && data.userId !== req.user.id) {
+            throw new common_1.ForbiddenException();
+        }
         const newAcquisitionId = await this.acquisitionService.createAcquisition(data);
         return new nest_response_builder_1.NestResponseBuilder()
             .setStatus(common_1.HttpStatus.CREATED)
@@ -47,27 +46,47 @@ let AcquisitionController = class AcquisitionController {
     }
 };
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'recharges',
+        action: 'read',
+        possession: 'any',
+    }),
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], AcquisitionController.prototype, "getAll", null);
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'recharges',
+        action: 'read',
+        possession: 'own',
+    }),
     (0, common_1.Get)('/:acquisitionId'),
     __param(0, (0, common_1.Param)('acquisitionId')),
+    __param(1, (0, nest_access_control_1.UserRoles)()),
+    __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], AcquisitionController.prototype, "getOneById", null);
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'recharges',
+        action: 'create',
+        possession: 'own',
+    }),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __param(2, (0, nest_access_control_1.UserRoles)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CreateAcquisition_dto_1.CreateAcquisitionDto]),
+    __metadata("design:paramtypes", [CreateAcquisition_dto_1.CreateAcquisitionDto, Object, Object]),
     __metadata("design:returntype", Promise)
 ], AcquisitionController.prototype, "create", null);
 AcquisitionController = __decorate([
     (0, common_1.Controller)('/acquisitions'),
+    (0, common_1.UseGuards)(nest_access_control_1.ACGuard),
     __metadata("design:paramtypes", [acquisition_service_1.AcquisitionService])
 ], AcquisitionController);
 exports.AcquisitionController = AcquisitionController;

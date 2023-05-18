@@ -19,6 +19,7 @@ const typeorm_2 = require("typeorm");
 const recharge_entity_1 = require("./recharge.entity");
 const user_service_1 = require("../user/user.service");
 const ListRecharge_dto_1 = require("./dto/ListRecharge.dto");
+const app_roles_1 = require("../access-control/app.roles");
 let RechargeService = class RechargeService {
     constructor(rechargeRepository, userService) {
         this.rechargeRepository = rechargeRepository;
@@ -34,14 +35,20 @@ let RechargeService = class RechargeService {
         });
         return recharges;
     }
-    async findOneRechargeById(rechargeId) {
+    async findOneRechargeById(rechargeId, userRoles, userId) {
         const data = await this.rechargeRepository.findOne({
             where: { id: rechargeId },
             relations: { user: true },
         });
+        if (!data) {
+            throw new common_1.NotFoundException();
+        }
+        if (userRoles !== app_roles_1.Roles.ADMIN && data.user.id !== userId) {
+            throw new common_1.ForbiddenException();
+        }
         const { user } = data;
-        const recharge = new ListRecharge_dto_1.ListRechargeDTO(data.id, data.value, data.status, { id: user.id, username: user.username });
-        return recharge;
+        const { id } = new ListRecharge_dto_1.ListRechargeDTO(data.id, data.value, data.status, { id: user.id, username: user.username });
+        return id;
     }
     async createRecharge(data) {
         const rechargeUser = await this.userService.getOneUserById(data.userId);
@@ -51,11 +58,14 @@ let RechargeService = class RechargeService {
         const { id } = await this.rechargeRepository.save(Object.assign({ user: rechargeUser }, data));
         return id;
     }
-    async payRecharge(rechargeId) {
+    async payRecharge(rechargeId, userId, userRoles) {
         const recharge = await this.rechargeRepository.findOne({
             relations: { user: true },
             where: { id: rechargeId },
         });
+        if (userRoles !== app_roles_1.Roles.ADMIN && recharge.user.id !== userId) {
+            throw new common_1.ForbiddenException();
+        }
         if (!recharge) {
             throw new common_1.NotFoundException('Recarga não encontrada.');
         }

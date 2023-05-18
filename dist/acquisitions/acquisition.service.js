@@ -20,7 +20,8 @@ const acquisition_entity_1 = require("./acquisition.entity");
 const ListAcquisition_dto_1 = require("./dto/ListAcquisition.dto");
 const user_service_1 = require("../user/user.service");
 const giftCard_service_1 = require("../gitf-card/giftCard.service");
-const UpdateUser_dto_1 = require("../user/dto/UpdateUser.dto");
+const app_roles_1 = require("../access-control/app.roles");
+const UpdateGiftCard_dto_1 = require("../gitf-card/dto/UpdateGiftCard.dto");
 let AcquisitionService = class AcquisitionService {
     constructor(acquisitionRepository, userService, giftCardService) {
         this.acquisitionRepository = acquisitionRepository;
@@ -37,11 +38,17 @@ let AcquisitionService = class AcquisitionService {
         });
         return acquisitions;
     }
-    async findOneAcquisitionById(acquisitionId) {
+    async findOneAcquisitionById(acquisitionId, userRoles, userId) {
         const data = await this.acquisitionRepository.findOne({
             where: { id: acquisitionId },
             relations: { giftCard: true, user: true },
         });
+        if (!data) {
+            throw new common_1.NotFoundException();
+        }
+        if (userRoles !== app_roles_1.Roles.ADMIN && userId !== data.user.id) {
+            throw new common_1.ForbiddenException();
+        }
         const { giftCard, user } = data;
         const acquisition = new ListAcquisition_dto_1.ListAcquisitionDTO(data.id, data.price, { id: giftCard.id, name: giftCard.name }, { id: user.id, username: user.username });
         return acquisition;
@@ -60,12 +67,12 @@ let AcquisitionService = class AcquisitionService {
             newAcquisition.price = acquisitionGiftCard.price;
             newAcquisition.giftCard = acquisitionGiftCard;
             newAcquisition.user = acquisitionUser;
-            const id = await transactionalAcquisitionManager.save(newAcquisition);
-            const user = new UpdateUser_dto_1.UpdateUserDto();
-            user.credits =
-                acquisitionUser.credits - acquisitionGiftCard.price;
-            await this.userService.updateUser(data.userId, user);
-            return id;
+            const acquisition = await transactionalAcquisitionManager.save(newAcquisition);
+            const giftCard = new UpdateGiftCard_dto_1.UpdateGiftCardDto();
+            giftCard.isAvailable = false;
+            await this.giftCardService.updateGiftCard(data.giftCardId, giftCard);
+            await this.userService.updateCredits(data.userId, acquisitionUser.credits, -acquisitionGiftCard.price);
+            return acquisition.id;
         });
     }
 };

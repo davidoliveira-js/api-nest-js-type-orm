@@ -1,2 +1,2 @@
-export declare class AccessModule {
+export declare class RolesGuardModule {
 }

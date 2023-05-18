@@ -10,6 +10,6 @@ export declare class AcquisitionService {
     private giftCardService;
     constructor(acquisitionRepository: Repository<AcquisitionEntity>, userService: UserService, giftCardService: GiftCardService);
     findAllAcquisitions(): Promise<ListAcquisitionDTO[]>;
-    findOneAcquisitionById(acquisitionId: string): Promise<ListAcquisitionDTO>;
-    createAcquisition(data: CreateAcquisitionDto): Promise<AcquisitionEntity>;
+    findOneAcquisitionById(acquisitionId: string, userRoles: string, userId: string): Promise<ListAcquisitionDTO>;
+    createAcquisition(data: CreateAcquisitionDto): Promise<string>;
 }

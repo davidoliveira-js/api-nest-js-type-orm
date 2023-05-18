@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { AcquisitionEntity } from './acquisition.entity';
@@ -6,8 +10,8 @@ import { ListAcquisitionDTO } from './dto/ListAcquisition.dto';
 import { CreateAcquisitionDto } from './dto/CreateAcquisition.dto';
 import { UserService } from 'src/user/user.service';
 import { GiftCardService } from 'src/gitf-card/giftCard.service';
+import { Roles } from 'src/access-control/app.roles';
 import { UpdateGiftCardDto } from 'src/gitf-card/dto/UpdateGiftCard.dto';
-import { UpdateUserDto } from 'src/user/dto/UpdateUser.dto';
 
 @Injectable()
 export class AcquisitionService {
@@ -34,11 +38,23 @@ export class AcquisitionService {
     return acquisitions;
   }
 
-  async findOneAcquisitionById(acquisitionId: string) {
+  async findOneAcquisitionById(
+    acquisitionId: string,
+    userRoles: string,
+    userId: string
+  ) {
     const data = await this.acquisitionRepository.findOne({
       where: { id: acquisitionId },
       relations: { giftCard: true, user: true },
     });
+
+    if (!data) {
+      throw new NotFoundException();
+    }
+
+    if (userRoles !== Roles.ADMIN && userId !== data.user.id) {
+      throw new ForbiddenException();
+    }
 
     const { giftCard, user } = data;
     const acquisition = new ListAcquisitionDTO(
@@ -70,17 +86,24 @@ export class AcquisitionService {
         newAcquisition.price = acquisitionGiftCard.price;
         newAcquisition.giftCard = acquisitionGiftCard;
         newAcquisition.user = acquisitionUser;
-        const id = await transactionalAcquisitionManager.save(
-          newAcquisition
+        const acquisition =
+          await transactionalAcquisitionManager.save(newAcquisition);
+
+        const giftCard = new UpdateGiftCardDto();
+        giftCard.isAvailable = false;
+
+        await this.giftCardService.updateGiftCard(
+          data.giftCardId,
+          giftCard
         );
 
-        const user = new UpdateUserDto();
-        user.credits =
-          acquisitionUser.credits - acquisitionGiftCard.price;
+        await this.userService.updateCredits(
+          data.userId,
+          acquisitionUser.credits,
+          -acquisitionGiftCard.price
+        );
 
-        await this.userService.updateUser(data.userId, user);
-
-        return id;
+        return acquisition.id;
       }
     );
   }

@@ -1,6 +1,6 @@
 import { RolesBuilder } from 'nest-access-control';
 
-export enum AppRoles {
+export enum Roles {
   ADMIN = 'admin',
   USER = 'user',
 }
@@ -8,10 +8,13 @@ export enum AppRoles {
 export const roles: RolesBuilder = new RolesBuilder();
 
 roles
-  .grant(AppRoles.ADMIN)
-  .readAny(['users'])
-  .createAny(['users'])
-  .updateAny(['users'])
-  .deleteAny(['users'])
-  .grant(AppRoles.USER)
-  .readOwn(['users']);
+  .grant(Roles.USER)
+  .createOwn(['acquisitions', 'recharges'])
+  .readOwn(['users', 'acquisitions', 'recharges'])
+  .readAny('giftCards')
+  .updateOwn(['users'])
+  .grant(Roles.ADMIN)
+  .createAny(['users', 'acquisitions', 'giftCards', 'recharges'])
+  .readAny(['users', 'acquisitions', 'giftCards', 'recharges'])
+  .updateAny(['users', 'giftCards'])
+  .deleteAny(['users', 'giftCards']);

@@ -10,6 +10,7 @@ import { AcquisitionModule } from './acquisitions/acquisition.module';
 import { GiftCardModule } from './gitf-card/giftCard.module';
 import { RechargeModule } from './recharge/recharge.module';
 import { RedisModule } from '@nestjs-modules/ioredis';
+import { RolesGuardModule } from './access-control/role.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { RedisModule } from '@nestjs-modules/ioredis';
     AcquisitionModule,
     GiftCardModule,
     RechargeModule,
+    RolesGuardModule,
   ],
   controllers: [],
   providers: [

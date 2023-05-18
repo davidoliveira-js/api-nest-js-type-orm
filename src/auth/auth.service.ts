@@ -23,18 +23,24 @@ export class AuthService {
     const payload = {
       id: user.id,
       username: user.username,
-      role: user.role,
+      roles: user.role,
       timeStamp: new Date().getTime(),
     };
-    const accessToken = await this.jwtService.signAsync({
-      ...payload,
-      tokenType: 'accessToken',
-    });
+    const accessToken = await this.jwtService.signAsync(
+      {
+        ...payload,
+        tokenType: 'accessToken',
+      },
+      { expiresIn: 900 }
+    );
 
-    const refreshToken = await this.jwtService.signAsync({
-      ...payload,
-      tokenType: 'refreshToken',
-    });
+    const refreshToken = await this.jwtService.signAsync(
+      {
+        ...payload,
+        tokenType: 'refreshToken',
+      },
+      { expiresIn: 900 }
+    );
 
     await this.redisService.addRefreshTokenInWhiteList(refreshToken);
 

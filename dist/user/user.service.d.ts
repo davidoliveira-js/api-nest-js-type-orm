@@ -12,7 +12,7 @@ export declare class UserService {
     getOneUserById(userId: string): Promise<UserEntity>;
     findOneUserByUsername(username: string): Promise<UserEntity>;
     createUser(data: CreateUserDto): Promise<string>;
-    updateUser(userId: string, data: UpdateUserDto): Promise<number>;
+    updateUser(userId: string, data: UpdateUserDto): Promise<void>;
     updateCredits(userId: string, userCredits: number, addedCredits: number): Promise<void>;
-    deleteUser(userId: string): Promise<number>;
+    deleteUser(userId: string): Promise<void>;
 }

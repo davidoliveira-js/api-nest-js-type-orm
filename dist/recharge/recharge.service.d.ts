@@ -8,7 +8,7 @@ export declare class RechargeService {
     private userService;
     constructor(rechargeRepository: Repository<RechargeEntity>, userService: UserService);
     findAllRecharges(): Promise<ListRechargeDTO[]>;
-    findOneRechargeById(rechargeId: string): Promise<ListRechargeDTO>;
+    findOneRechargeById(rechargeId: string, userRoles: string, userId: string): Promise<string>;
     createRecharge(data: CreateRechargeDto): Promise<string>;
-    payRecharge(rechargeId: string): Promise<boolean>;
+    payRecharge(rechargeId: string, userId: string, userRoles: string): Promise<boolean>;
 }

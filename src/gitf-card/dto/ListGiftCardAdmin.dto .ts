@@ -1,4 +1,4 @@
-export class ListGiftCardDto {
+export class ListGiftCardAdminDto {
   constructor(
     readonly id: string,
     readonly name: string,

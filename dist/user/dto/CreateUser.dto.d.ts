@@ -1,8 +1,8 @@
-import { Role } from 'src/enums/role.enum';
+import { Roles } from 'src/access-control/app.roles';
 export declare class CreateUserDto {
     username: string;
     email: string;
     password: string;
     credits: number;
-    role: Role;
+    role: Roles;
 }

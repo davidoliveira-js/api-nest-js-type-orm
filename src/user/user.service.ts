@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
@@ -57,6 +57,9 @@ export class UserService {
 
   async findOneUserById(userId: string) {
     const data = await this.userRepository.findOneBy({ id: userId });
+    if (!data) {
+      throw new NotFoundException();
+    }
     const { acquisitions, recharges } = data;
     const user = new ListUserDto(
       data.id,
@@ -104,7 +107,13 @@ export class UserService {
   }
 
   async updateUser(userId: string, data: UpdateUserDto) {
-    return (await this.userRepository.update(userId, data)).affected;
+    const updatedUser = (
+      await this.userRepository.update(userId, data)
+    ).affected;
+    if (!updatedUser) {
+      throw new NotFoundException();
+    }
+    return;
   }
 
   async updateCredits(
@@ -112,12 +121,16 @@ export class UserService {
     userCredits: number,
     addedCredits: number
   ) {
-    const user = new UpdateUserDto();
-    user.credits = userCredits + addedCredits;
-    await this.userRepository.update(userId, user);
+    const credits = userCredits + addedCredits;
+    await this.userRepository.update(userId, { credits: credits });
   }
 
   async deleteUser(userId: string) {
-    return (await this.userRepository.delete(userId)).affected;
+    const deletedUser = (await this.userRepository.delete(userId))
+      .affected;
+    if (!deletedUser) {
+      throw new NotFoundException();
+    }
+    return;
   }
 }

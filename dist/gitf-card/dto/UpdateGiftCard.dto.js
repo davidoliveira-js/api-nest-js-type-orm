@@ -14,9 +14,14 @@ const class_validator_1 = require("class-validator");
 class UpdateGiftCardDto {
 }
 __decorate([
-    (0, class_validator_1.IsBoolean)({ message: 'informe um dado válido' }),
+    (0, class_validator_1.IsBoolean)({ message: 'Informe um dado válido' }),
     (0, class_validator_1.IsOptional)(),
     __metadata("design:type", Boolean)
 ], UpdateGiftCardDto.prototype, "isAvailable", void 0);
+__decorate([
+    (0, class_validator_1.IsNumber)({}, { message: 'Informe um preço válido.' }),
+    (0, class_validator_1.IsOptional)(),
+    __metadata("design:type", Number)
+], UpdateGiftCardDto.prototype, "price", void 0);
 exports.UpdateGiftCardDto = UpdateGiftCardDto;
 //# sourceMappingURL=UpdateGiftCard.dto.js.map

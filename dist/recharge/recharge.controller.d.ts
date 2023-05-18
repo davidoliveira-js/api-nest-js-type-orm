@@ -4,7 +4,9 @@ export declare class RechargeController {
     private rechargeService;
     constructor(rechargeService: RechargeService);
     getAll(): Promise<import("./dto/ListRecharge.dto").ListRechargeDTO[]>;
-    getOneById(id: string): Promise<import("./dto/ListRecharge.dto").ListRechargeDTO>;
-    create(data: CreateRechargeDto): Promise<import("../core/http/nest-response").NestResponse>;
-    pay(rechargeId: string): Promise<void>;
+    getOneById(id: string, userRoles: string, req: any): Promise<string>;
+    create(data: CreateRechargeDto, req: any, userRoles: string): Promise<import("../core/http/nest-response").NestResponse>;
+    pay(rechargeId: string, req: any, userRoles: string): Promise<{
+        id: string;
+    }>;
 }

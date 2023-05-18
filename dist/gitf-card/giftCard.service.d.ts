@@ -1,16 +1,17 @@
 import { Repository } from 'typeorm';
 import { GiftCardEntity } from './gifitCard.entity';
 import { CreateGiftCardDto } from './dto/CreateGiftCard.dto';
-import { ListGiftCardDto } from './dto/ListGiftCard.dto';
+import { ListGiftCardUserDto } from './dto/ListGiftCardUser.dto';
+import { ListGiftCardAdminDto } from './dto/ListGiftCardAdmin.dto ';
 import { UpdateGiftCardDto } from './dto/UpdateGiftCard.dto';
 export declare class GiftCardService {
     private readonly giftCardRepository;
     constructor(giftCardRepository: Repository<GiftCardEntity>);
     hashPin(pin: string): Promise<string>;
-    findAllGiftCards(): Promise<ListGiftCardDto[]>;
-    findOneGiftCardById(giftCardId: string): Promise<ListGiftCardDto>;
+    findAllGiftCards(userRoles: string): Promise<(ListGiftCardAdminDto | ListGiftCardUserDto)[]>;
+    findOneGiftCardById(giftCardId: string, userRoles: string): Promise<ListGiftCardAdminDto | ListGiftCardUserDto>;
     getOneGiftCardById(giftCardId: string): Promise<GiftCardEntity>;
     createGiftCard(data: CreateGiftCardDto): Promise<string>;
-    updateGiftCard(giftCardId: string, data: UpdateGiftCardDto): Promise<number>;
-    deleteGiftCard(giftCardId: string): Promise<number>;
+    updateGiftCard(giftCardId: string, data: UpdateGiftCardDto): Promise<void>;
+    deleteGiftCard(giftCardId: string): Promise<void>;
 }

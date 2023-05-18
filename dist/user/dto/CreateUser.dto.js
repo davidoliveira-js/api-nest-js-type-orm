@@ -11,7 +11,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.CreateUserDto = void 0;
 const class_validator_1 = require("class-validator");
-const role_enum_1 = require("../../enums/role.enum");
+const app_roles_1 = require("../../access-control/app.roles");
 class CreateUserDto {
 }
 __decorate([
@@ -39,7 +39,7 @@ __decorate([
     __metadata("design:type", Number)
 ], CreateUserDto.prototype, "credits", void 0);
 __decorate([
-    (0, class_validator_1.IsEnum)(role_enum_1.Role, { message: 'Informe um cargo válido.' }),
+    (0, class_validator_1.IsEnum)(app_roles_1.Roles, { message: 'Informe um cargo válido.' }),
     __metadata("design:type", String)
 ], CreateUserDto.prototype, "role", void 0);
 exports.CreateUserDto = CreateUserDto;

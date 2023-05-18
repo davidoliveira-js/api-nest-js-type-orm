@@ -18,7 +18,6 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const bcrypt = require("bcryptjs");
 const user_entity_1 = require("./user.entity");
-const UpdateUser_dto_1 = require("./dto/UpdateUser.dto");
 const ListUsers_dto_1 = require("./dto/ListUsers.dto");
 let UserService = class UserService {
     constructor(userRepository) {
@@ -57,6 +56,9 @@ let UserService = class UserService {
     }
     async findOneUserById(userId) {
         const data = await this.userRepository.findOneBy({ id: userId });
+        if (!data) {
+            throw new common_1.NotFoundException();
+        }
         const { acquisitions, recharges } = data;
         const user = new ListUsers_dto_1.ListUserDto(data.id, data.username, data.email, data.credits, acquisitions.map((acquisition) => {
             const { giftCard } = acquisition;
@@ -93,15 +95,23 @@ let UserService = class UserService {
         return id;
     }
     async updateUser(userId, data) {
-        return (await this.userRepository.update(userId, data)).affected;
+        const updatedUser = (await this.userRepository.update(userId, data)).affected;
+        if (!updatedUser) {
+            throw new common_1.NotFoundException();
+        }
+        return;
     }
     async updateCredits(userId, userCredits, addedCredits) {
-        const user = new UpdateUser_dto_1.UpdateUserDto();
-        user.credits = userCredits + addedCredits;
-        await this.userRepository.update(userId, user);
+        const credits = userCredits + addedCredits;
+        await this.userRepository.update(userId, { credits: credits });
     }
     async deleteUser(userId) {
-        return (await this.userRepository.delete(userId)).affected;
+        const deletedUser = (await this.userRepository.delete(userId))
+            .affected;
+        if (!deletedUser) {
+            throw new common_1.NotFoundException();
+        }
+        return;
     }
 };
 UserService = __decorate([

@@ -31,6 +31,9 @@ export class AcquisitionEntity {
 
   @ManyToOne(() => UserEntity, (user) => user.acquisitions, {
     nullable: false,
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   user: UserEntity;
 

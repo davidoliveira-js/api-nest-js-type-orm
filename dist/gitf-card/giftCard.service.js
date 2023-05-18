@@ -18,7 +18,9 @@ const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const bcrypt = require("bcryptjs");
 const gifitCard_entity_1 = require("./gifitCard.entity");
-const ListGiftCard_dto_1 = require("./dto/ListGiftCard.dto");
+const ListGiftCardUser_dto_1 = require("./dto/ListGiftCardUser.dto");
+const ListGiftCardAdmin_dto_1 = require("./dto/ListGiftCardAdmin.dto ");
+const app_roles_1 = require("../access-control/app.roles");
 let GiftCardService = class GiftCardService {
     constructor(giftCardRepository) {
         this.giftCardRepository = giftCardRepository;
@@ -29,18 +31,29 @@ let GiftCardService = class GiftCardService {
         const hash = await bcrypt.hash(pin, salt);
         return hash;
     }
-    async findAllGiftCards() {
-        const data = await this.giftCardRepository.find();
+    async findAllGiftCards(userRoles) {
+        const data = await this.giftCardRepository.find({
+            where: userRoles !== app_roles_1.Roles.ADMIN ? { isAvailable: true } : {},
+        });
         const giftCards = data.map((giftCard) => {
-            return new ListGiftCard_dto_1.ListGiftCardDto(giftCard.id, giftCard.name, giftCard.price, giftCard.pin, giftCard.expiration_date, giftCard.isAvailable);
+            return userRoles === app_roles_1.Roles.ADMIN
+                ? new ListGiftCardAdmin_dto_1.ListGiftCardAdminDto(giftCard.id, giftCard.name, giftCard.price, giftCard.pin, giftCard.expiration_date, giftCard.isAvailable)
+                : new ListGiftCardUser_dto_1.ListGiftCardUserDto(giftCard.id, giftCard.name, giftCard.price);
         });
         return giftCards;
     }
-    async findOneGiftCardById(giftCardId) {
+    async findOneGiftCardById(giftCardId, userRoles) {
         const data = await this.giftCardRepository.findOne({
-            where: { id: giftCardId },
+            where: userRoles === app_roles_1.Roles.ADMIN
+                ? { id: giftCardId }
+                : { id: giftCardId, isAvailable: true },
         });
-        const giftCard = new ListGiftCard_dto_1.ListGiftCardDto(data.id, data.name, data.price, data.pin, data.expiration_date, data.isAvailable);
+        if (!data) {
+            throw new common_1.NotFoundException();
+        }
+        const giftCard = userRoles === app_roles_1.Roles.ADMIN
+            ? new ListGiftCardAdmin_dto_1.ListGiftCardAdminDto(data.id, data.name, data.price, data.pin, data.expiration_date, data.isAvailable)
+            : new ListGiftCardUser_dto_1.ListGiftCardUserDto(data.id, data.name, data.price);
         return giftCard;
     }
     async getOneGiftCardById(giftCardId) {
@@ -54,12 +67,26 @@ let GiftCardService = class GiftCardService {
         return id;
     }
     async updateGiftCard(giftCardId, data) {
-        return (await this.giftCardRepository.update(giftCardId, data))
-            .affected;
+        const updatedGiftCard = (await this.giftCardRepository.update(giftCardId, data)).affected;
+        if (!updatedGiftCard) {
+            throw new common_1.NotFoundException();
+        }
+        return;
     }
     async deleteGiftCard(giftCardId) {
-        return (await this.giftCardRepository.delete(giftCardId))
-            .affected;
+        try {
+            const deletedGiftCard = (await this.giftCardRepository.delete(giftCardId)).affected;
+            if (!deletedGiftCard) {
+                throw new common_1.NotFoundException();
+            }
+            return;
+        }
+        catch (error) {
+            if (error instanceof typeorm_2.QueryFailedError) {
+                throw new common_1.BadRequestException();
+            }
+            throw new common_1.InternalServerErrorException();
+        }
     }
 };
 GiftCardService = __decorate([

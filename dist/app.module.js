@@ -19,6 +19,7 @@ const acquisition_module_1 = require("./acquisitions/acquisition.module");
 const giftCard_module_1 = require("./gitf-card/giftCard.module");
 const recharge_module_1 = require("./recharge/recharge.module");
 const ioredis_1 = require("@nestjs-modules/ioredis");
+const role_module_1 = require("./access-control/role.module");
 let AppModule = class AppModule {
 };
 AppModule = __decorate([
@@ -46,6 +47,7 @@ AppModule = __decorate([
             acquisition_module_1.AcquisitionModule,
             giftCard_module_1.GiftCardModule,
             recharge_module_1.RechargeModule,
+            role_module_1.RolesGuardModule,
         ],
         controllers: [],
         providers: [

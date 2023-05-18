@@ -8,34 +8,51 @@ import {
   Param,
   Post,
   Put,
+  UseGuards,
+  Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/CreateUser.dto';
 import { UpdateUserDto } from './dto/UpdateUser.dto';
 import { NestResponseBuilder } from 'src/core/http/nest-response-builder';
+import { ACGuard, UseRoles, UserRoles } from 'nest-access-control';
+import { Public } from 'src/decorators/public.decorator';
+import { Roles } from 'src/access-control/app.roles';
 
 @Controller('/users')
+@UseGuards(ACGuard)
 export class UserController {
   constructor(private userService: UserService) {}
 
+  @UseRoles({
+    resource: 'users',
+    action: 'read',
+    possession: 'any',
+  })
   @Get()
   async getAll() {
-    const users = await this.userService.findAllUsers();
-    return users;
+    return await this.userService.findAllUsers();
   }
 
+  @UseRoles({
+    resource: 'users',
+    action: 'read',
+    possession: 'own',
+  })
   @Get('/:userId')
-  async getOneById(@Param('userId') id: string) {
-    const data = await this.userService.findOneUserById(id);
-    if (!data) {
-      throw new NotFoundException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Usuário não encontrado.',
-      });
+  async getOneById(
+    @Param('userId') id: string,
+    @UserRoles() userRoles: string,
+    @Request() req
+  ) {
+    if (userRoles !== Roles.ADMIN && req.user.id !== id) {
+      throw new ForbiddenException();
     }
-    return data;
+    return await this.userService.findOneUserById(id);
   }
 
+  @Public()
   @Post()
   async create(@Body() data: CreateUserDto) {
     const newUserId = await this.userService.createUser(data);
@@ -48,30 +65,31 @@ export class UserController {
       .build();
   }
 
+  @UseRoles({
+    resource: 'users',
+    action: 'update',
+    possession: 'own',
+  })
   @Put('/:userId')
   async update(
     @Body() data: UpdateUserDto,
-    @Param('userId') id: string
+    @Param('userId') id: string,
+    @UserRoles() userRoles,
+    @Request() req
   ) {
-    const updatedUser = await this.userService.updateUser(id, data);
-    if (!updatedUser) {
-      throw new NotFoundException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Usuário não encontrado.',
-      });
+    if (userRoles !== Roles.ADMIN && id !== req.user.id) {
+      throw new ForbiddenException();
     }
-    return;
+    return await this.userService.updateUser(id, data);
   }
 
+  @UseRoles({
+    resource: 'users',
+    action: 'read',
+    possession: 'any',
+  })
   @Delete('/:userId')
   async delete(@Param('userId') id: string) {
-    const deletedUser = await this.userService.deleteUser(id);
-    if (!deletedUser) {
-      throw new NotFoundException({
-        statusCode: HttpStatus.NOT_FOUND,
-        message: 'Usuário não encontrado.',
-      });
-    }
-    return;
+    return await this.userService.deleteUser(id);
   }
 }

@@ -15,7 +15,9 @@ const jwt_1 = require("@nestjs/jwt");
 const passport_1 = require("@nestjs/passport");
 const local_strategy_1 = require("./local.strategy");
 const jwt_strategy_1 = require("./jwt.strategy");
+const core_1 = require("@nestjs/core");
 const redis_service_1 = require("../redis/redis.service");
+const auth_guard_1 = require("./auth.guard");
 exports.jwtConstants = {
     secret: 'DO NOT USE THIS VALUE. INSTEAD, CREATE A COMPLEX SECRET AND KEEP IT SAFE OUTSIDE OF THE SOURCE CODE.',
 };
@@ -37,6 +39,10 @@ AuthModule = __decorate([
             jwt_strategy_1.JwtStrategy,
             auth_service_1.AuthService,
             redis_service_1.RedisCacheService,
+            {
+                provide: core_1.APP_GUARD,
+                useClass: auth_guard_1.AuthGuard,
+            },
         ],
         controllers: [auth_controller_1.AuthController],
     })

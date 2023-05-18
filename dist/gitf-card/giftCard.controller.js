@@ -18,23 +18,18 @@ const giftCard_service_1 = require("./giftCard.service");
 const nest_response_builder_1 = require("../core/http/nest-response-builder");
 const CreateGiftCard_dto_1 = require("./dto/CreateGiftCard.dto");
 const UpdateGiftCard_dto_1 = require("./dto/UpdateGiftCard.dto");
+const nest_access_control_1 = require("nest-access-control");
 let GiftCardController = class GiftCardController {
     constructor(giftCardService) {
         this.giftCardService = giftCardService;
     }
-    async getAll() {
-        const giftCards = await this.giftCardService.findAllGiftCards();
+    async getAll(userRoles) {
+        const giftCards = await this.giftCardService.findAllGiftCards(userRoles);
         return giftCards;
     }
-    async getOneById(id) {
-        const data = await this.giftCardService.findOneGiftCardById(id);
-        if (!data) {
-            throw new common_1.NotFoundException({
-                statusCode: common_1.HttpStatus.NOT_FOUND,
-                message: 'Gift card não encontrado.',
-            });
-        }
-        return data;
+    async getOneById(id, userRoles) {
+        const giftCard = await this.giftCardService.findOneGiftCardById(id, userRoles);
+        return giftCard;
     }
     async create(data) {
         const newGiftCardId = await this.giftCardService.createGiftCard(data);
@@ -47,40 +42,43 @@ let GiftCardController = class GiftCardController {
             .build();
     }
     async update(data, id) {
-        const updatedGiftCard = await this.giftCardService.updateGiftCard(id, data);
-        if (!updatedGiftCard) {
-            throw new common_1.NotFoundException({
-                statusCode: common_1.HttpStatus.NOT_FOUND,
-                message: 'Gift card não encontrado.',
-            });
-        }
-        return;
+        return await this.giftCardService.updateGiftCard(id, data);
     }
     async delete(id) {
-        const deletedGiftCard = await this.giftCardService.deleteGiftCard(id);
-        if (!deletedGiftCard) {
-            throw new common_1.NotFoundException({
-                statusCode: common_1.HttpStatus.NOT_FOUND,
-                message: 'Gift card não encontrado.',
-            });
-        }
-        return;
+        return await this.giftCardService.deleteGiftCard(id);
     }
 };
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'giftCards',
+        action: 'read',
+        possession: 'any',
+    }),
     (0, common_1.Get)(),
-    __metadata("design:type", Function),
-    __metadata("design:paramtypes", []),
-    __metadata("design:returntype", Promise)
-], GiftCardController.prototype, "getAll", null);
-__decorate([
-    (0, common_1.Get)('/:giftCardId'),
-    __param(0, (0, common_1.Param)('giftCardId')),
+    __param(0, (0, nest_access_control_1.UserRoles)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
+], GiftCardController.prototype, "getAll", null);
+__decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'giftCards',
+        action: 'read',
+        possession: 'any',
+    }),
+    (0, common_1.Get)('/:giftCardId'),
+    __param(0, (0, common_1.Param)('giftCardId')),
+    __param(1, (0, nest_access_control_1.UserRoles)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", Promise)
 ], GiftCardController.prototype, "getOneById", null);
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'giftCards',
+        action: 'create',
+        possession: 'any',
+    }),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
@@ -88,6 +86,11 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], GiftCardController.prototype, "create", null);
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'giftCards',
+        action: 'update',
+        possession: 'any',
+    }),
     (0, common_1.Put)('/:giftCardId'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Param)('giftCardId')),
@@ -96,6 +99,11 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], GiftCardController.prototype, "update", null);
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'giftCards',
+        action: 'delete',
+        possession: 'any',
+    }),
     (0, common_1.Delete)('/:giftCardId'),
     __param(0, (0, common_1.Param)('giftCardId')),
     __metadata("design:type", Function),
@@ -104,6 +112,7 @@ __decorate([
 ], GiftCardController.prototype, "delete", null);
 GiftCardController = __decorate([
     (0, common_1.Controller)('/gift-cards'),
+    (0, common_1.UseGuards)(nest_access_control_1.ACGuard),
     __metadata("design:paramtypes", [giftCard_service_1.GiftCardService])
 ], GiftCardController);
 exports.GiftCardController = GiftCardController;

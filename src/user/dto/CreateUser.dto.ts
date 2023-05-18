@@ -7,7 +7,7 @@ import {
   Length,
 } from 'class-validator';
 import { UniqueUserName } from '../uniqueUserName';
-import { Role } from 'src/enums/role.enum';
+import { Roles } from 'src/access-control/app.roles';
 
 export class CreateUserDto {
   // @UniqueUserName({
@@ -33,6 +33,6 @@ export class CreateUserDto {
   @IsNotEmpty({ message: 'Informe os créditos.' })
   credits: number;
 
-  @IsEnum(Role, { message: 'Informe um cargo válido.' })
-  role: Role;
+  @IsEnum(Roles, { message: 'Informe um cargo válido.' })
+  role: Roles;
 }

@@ -48,7 +48,6 @@ export class UserEntity {
     (acquisition) => acquisition.user,
     {
       eager: true,
-      cascade: true,
       nullable: false,
     }
   )
@@ -56,8 +55,10 @@ export class UserEntity {
 
   @OneToMany(() => RechargeEntity, (recharge) => recharge.user, {
     eager: true,
-    cascade: true,
     nullable: false,
+    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   recharges: RechargeEntity[];
 }

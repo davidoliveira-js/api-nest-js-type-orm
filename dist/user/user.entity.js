@@ -54,7 +54,6 @@ __decorate([
 __decorate([
     (0, typeorm_1.OneToMany)(() => acquisition_entity_1.AcquisitionEntity, (acquisition) => acquisition.user, {
         eager: true,
-        cascade: true,
         nullable: false,
     }),
     __metadata("design:type", Array)
@@ -62,8 +61,10 @@ __decorate([
 __decorate([
     (0, typeorm_1.OneToMany)(() => recharge_entity_1.RechargeEntity, (recharge) => recharge.user, {
         eager: true,
-        cascade: true,
         nullable: false,
+        cascade: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
     }),
     __metadata("design:type", Array)
 ], UserEntity.prototype, "recharges", void 0);

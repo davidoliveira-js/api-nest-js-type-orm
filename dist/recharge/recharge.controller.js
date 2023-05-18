@@ -17,6 +17,8 @@ const common_1 = require("@nestjs/common");
 const recharge_service_1 = require("./recharge.service");
 const CreateRecharge_dto_1 = require("./dto/CreateRecharge.dto");
 const nest_response_builder_1 = require("../core/http/nest-response-builder");
+const nest_access_control_1 = require("nest-access-control");
+const app_roles_1 = require("../access-control/app.roles");
 let RechargeController = class RechargeController {
     constructor(rechargeService) {
         this.rechargeService = rechargeService;
@@ -25,17 +27,14 @@ let RechargeController = class RechargeController {
         const recharges = await this.rechargeService.findAllRecharges();
         return recharges;
     }
-    async getOneById(id) {
-        const recharge = await this.rechargeService.findOneRechargeById(id);
-        if (!recharge) {
-            throw new common_1.NotFoundException({
-                statusCode: common_1.HttpStatus.NOT_FOUND,
-                message: 'Recarga não encontrado.',
-            });
-        }
-        return recharge;
+    async getOneById(id, userRoles, req) {
+        const { user } = req;
+        return await this.rechargeService.findOneRechargeById(id, userRoles, user.id);
     }
-    async create(data) {
+    async create(data, req, userRoles) {
+        if (userRoles !== app_roles_1.Roles.ADMIN && data.userId !== req.user.id) {
+            throw new common_1.ForbiddenException();
+        }
         const newRechargeId = await this.rechargeService.createRecharge(data);
         return new nest_response_builder_1.NestResponseBuilder()
             .setStatus(common_1.HttpStatus.CREATED)
@@ -45,43 +44,71 @@ let RechargeController = class RechargeController {
             .setBody({ id: newRechargeId })
             .build();
     }
-    async pay(rechargeId) {
-        const payment = await this.rechargeService.payRecharge(rechargeId);
+    async pay(rechargeId, req, userRoles) {
+        const payment = await this.rechargeService.payRecharge(rechargeId, req.user.id, userRoles);
         if (!payment) {
             throw new common_1.InternalServerErrorException('Algo deu errado.');
         }
-        return;
+        return { id: rechargeId };
     }
 };
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'recharges',
+        action: 'read',
+        possession: 'any',
+    }),
     (0, common_1.Get)(),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], RechargeController.prototype, "getAll", null);
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'recharges',
+        action: 'read',
+        possession: 'own',
+    }),
     (0, common_1.Get)('/:rechargeId'),
     __param(0, (0, common_1.Param)('rechargeId')),
+    __param(1, (0, nest_access_control_1.UserRoles)()),
+    __param(2, (0, common_1.Request)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, String, Object]),
     __metadata("design:returntype", Promise)
 ], RechargeController.prototype, "getOneById", null);
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'recharges',
+        action: 'create',
+        possession: 'own',
+    }),
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Request)()),
+    __param(2, (0, nest_access_control_1.UserRoles)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [CreateRecharge_dto_1.CreateRechargeDto]),
+    __metadata("design:paramtypes", [CreateRecharge_dto_1.CreateRechargeDto, Object, String]),
     __metadata("design:returntype", Promise)
 ], RechargeController.prototype, "create", null);
 __decorate([
+    (0, nest_access_control_1.UseRoles)({
+        resource: 'recharges',
+        action: 'create',
+        possession: 'own',
+    }),
+    (0, common_1.HttpCode)(common_1.HttpStatus.OK),
     (0, common_1.Post)('/:rechargeId'),
     __param(0, (0, common_1.Param)('rechargeId')),
+    __param(1, (0, common_1.Request)()),
+    __param(2, (0, nest_access_control_1.UserRoles)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object, String]),
     __metadata("design:returntype", Promise)
 ], RechargeController.prototype, "pay", null);
 RechargeController = __decorate([
     (0, common_1.Controller)('/recharges'),
+    (0, common_1.UseGuards)(nest_access_control_1.ACGuard),
     __metadata("design:paramtypes", [recharge_service_1.RechargeService])
 ], RechargeController);
 exports.RechargeController = RechargeController;

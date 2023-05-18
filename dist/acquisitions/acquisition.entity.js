@@ -38,6 +38,9 @@ __decorate([
 __decorate([
     (0, typeorm_1.ManyToOne)(() => user_entity_1.UserEntity, (user) => user.acquisitions, {
         nullable: false,
+        cascade: true,
+        onDelete: 'CASCADE',
+        onUpdate: 'CASCADE',
     }),
     __metadata("design:type", user_entity_1.UserEntity)
 ], AcquisitionEntity.prototype, "user", void 0);

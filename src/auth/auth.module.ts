@@ -30,10 +30,10 @@ export const jwtConstants = {
     JwtStrategy,
     AuthService,
     RedisCacheService,
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
   ],
   controllers: [AuthController],
 })

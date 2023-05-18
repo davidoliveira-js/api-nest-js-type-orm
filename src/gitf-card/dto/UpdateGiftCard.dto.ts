@@ -1,7 +1,11 @@
-import { IsBoolean, IsOptional } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
 
 export class UpdateGiftCardDto {
-  @IsBoolean({ message: 'informe um dado válido' })
+  @IsBoolean({ message: 'Informe um dado válido' })
   @IsOptional()
   isAvailable: boolean;
+
+  @IsNumber({}, { message: 'Informe um preço válido.' })
+  @IsOptional()
+  price: number;
 }

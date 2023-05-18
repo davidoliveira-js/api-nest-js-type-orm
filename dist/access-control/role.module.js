@@ -6,39 +6,16 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AccessModule = void 0;
+exports.RolesGuardModule = void 0;
 const common_1 = require("@nestjs/common");
 const nest_access_control_1 = require("nest-access-control");
-let RoleService = class RoleService {
-    getRoles() {
-        return Promise.resolve(['my-custom-role']);
-    }
+const app_roles_1 = require("./app.roles");
+let RolesGuardModule = class RolesGuardModule {
 };
-RoleService = __decorate([
-    (0, common_1.Injectable)()
-], RoleService);
-let RoleModule = class RoleModule {
-};
-RoleModule = __decorate([
+RolesGuardModule = __decorate([
     (0, common_1.Module)({
-        providers: [RoleService],
-        exports: [RoleService],
+        imports: [nest_access_control_1.AccessControlModule.forRoles(app_roles_1.roles)],
     })
-], RoleModule);
-let AccessModule = class AccessModule {
-};
-AccessModule = __decorate([
-    (0, common_1.Module)({
-        imports: [
-            nest_access_control_1.AccessControlModule.forRootAsync({
-                imports: [RoleModule],
-                inject: [RoleService],
-                useFactory: async (roleService) => {
-                    return new nest_access_control_1.RolesBuilder(await roleService.getRoles());
-                },
-            }),
-        ],
-    })
-], AccessModule);
-exports.AccessModule = AccessModule;
+], RolesGuardModule);
+exports.RolesGuardModule = RolesGuardModule;
 //# sourceMappingURL=role.module.js.map
